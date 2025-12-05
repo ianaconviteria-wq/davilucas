@@ -38,41 +38,68 @@
             pointer-events: none;
         }
 
-        .btn {
-            position: absolute;
-            z-index: 4;
-            font-size: 17px;
-            padding: 12px 18px;
-            border: none;
-            border-radius: 10px;
-            background: #ff4081;
-            color: white;
-            cursor: pointer;
-        }
+     /* Estilo geral minimalista dos botões */
+.btn {
+    position: absolute;
+    z-index: 20 !important;
+    font-size: 15px;
+    padding: 10px 16px;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(6px);
+    color: white;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
 
-        #captureBtn {
-            bottom: 20px;
-        }
+/* Pequena animação ao tocar */
+.btn:active {
+    transform: scale(0.95);
+    background: rgba(0, 0, 0, 0.55);
+}
 
-        #switchBtn {
-            bottom: 80px;
-        }
+/* Botão de capturar — redondo + animação pulsar */
+#captureBtn {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    padding: 0;
+    border: 3px solid white;
+    background: rgba(255,255,255,0.15);
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: pulse 1.9s infinite ease-in-out;
+}
 
-        /* Botões da prévia */
-        #saveBtn, #retakeBtn {
-            bottom: 20px;
-            display: none;
-        }
+/* Animação de pulsar */
+@keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+    70%  { box-shadow: 0 0 0 18px rgba(255,255,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+}
 
-        #saveBtn {
-            left: 20px;
-            background: #4caf50;
-        }
+/* Botão de trocar câmera — menor e discreto */
+#switchBtn {
+    bottom: 115px;
+    right: 20px;
+}
 
-        #retakeBtn {
-            right: 20px;
-            background: #e91e63;
-        }
+/* Botões da prévia */
+#saveBtn, #retakeBtn {
+    bottom: 25px;
+    font-size: 14px;
+}
+
+#saveBtn {
+    left: 20px;
+}
+
+#retakeBtn {
+    right: 20px;
+}
+
     </style>
 </head>
 
