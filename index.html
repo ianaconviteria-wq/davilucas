@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -17,29 +17,6 @@
         }
 
         #camera, #preview {
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            top: 0;
-            left: 0;
-        }
-
-        #preview {
-            display: none;
-            z-index: 3;
-        }
-
-        #frame {
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            z-index: 2;
-            pointer-events: none;
-        }
-
-     /* Estilo geral minimalista dos botões */
-.btn {
     position: absolute;
     z-index: 20 !important;
     font-size: 15px;
@@ -102,6 +79,7 @@
 #saveBtn, #retakeBtn {
     bottom: 25px;
     font-size: 14px;
+    display: none;
 }
 
 #saveBtn {
