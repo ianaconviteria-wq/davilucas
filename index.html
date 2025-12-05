@@ -1,94 +1,85 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Câmera</title>
-
-<style>
-    body {
-        margin: 0;
-        overflow: hidden;
-        background: #000;
-    }
-
-    #camera-container {
-        position: relative;
-        width: 100vw;
-        height: 100vh;
-        background: #000;
-    }
-
-   video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scaleX(-1);
-    z-index: 1; /* vídeo fica atrás */
-}
-
-    }
-
-    /* Moldura por cima */
-    #frame {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        object-fit: contain;
-        pointer-events: none;
-        z-index: 5;
-    }
-
-    /* Botões visíveis */
-    .btn-area {
-        position: absolute;
-        bottom: 5vh;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        gap: 30px;
-        z-index: 10;
-    }
-
-    .btn {
-        padding: 18px;
-        background: white;
-        border-radius: 50%;
-        border: none;
-        cursor: pointer;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moldura da Festa</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #camera {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: 1;
+        }
+        #frame {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            z-index: 2;
+            pointer-events: none;
+        }
+        #captureBtn {
+            position: absolute;
+            bottom: 20px;
+            z-index: 3;
+            font-size: 18px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            background: #ff4081;
+            color: white;
+        }
+    </style>
 </head>
-
 <body>
 
-<div id="camera-container">
-    <video id="video" autoplay playsinline></video>
+    <video id="camera" autoplay playsinline></video>
     <img id="frame" src="moldura.png">
+    <button id="captureBtn">📸 Capturar</button>
 
+    <canvas id="canvas" style="display:none"></canvas>
 
+    <script>
+        const camera = document.getElementById('camera');
+        const frame = document.getElementById('frame');
+        const canvas = document.getElementById('canvas');
+        const captureBtn = document.getElementById('captureBtn');
 
-    <div class="btn-area">
-        <button class="btn" id="capture-btn">📸</button>
-        <button class="btn" id="switch-btn">🔄</button>
-    </div>
-</div>
+        // Abrir câmera
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+            .then(stream => {
+                camera.srcObject = stream;
+            });
 
-<script>
-async function startCamera(facing = "environment") {
-    const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing }
-    });
-    document.getElementById("video").srcObject = stream;
-}
+        // Capturar foto
+        captureBtn.onclick = () => {
+            const context = canvas.getContext('2d');
+            canvas.width = camera.videoWidth;
+            canvas.height = camera.videoHeight;
 
-startCamera();
-</script>
+            // Desenha câmera
+            context.drawImage(camera, 0, 0, canvas.width, canvas.height);
+
+            // Desenha moldura
+            context.drawImage(frame, 0, 0, canvas.width, canvas.height);
+
+            // Baixa a foto
+            const link = document.createElement('a');
+            link.download = 'foto-com-moldura.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        };
+    </script>
 
 </body>
 </html>
