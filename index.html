@@ -3,118 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Câmera com Moldura</title>
+<title>Câmera</title>
 
 <style>
     body {
         margin: 0;
         overflow: hidden;
         background: #000;
-        font-family: Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
     }
 
     #camera-container {
         position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
+        background: #000;
     }
 
     video {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        transform: scaleX(-1); /* espelho */
+        transform: scaleX(-1);
     }
 
-    /* Moldura */
+    /* Moldura por cima */
     #frame {
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
+        object-fit: contain;
         pointer-events: none;
-        z-index: 1; /* moldura atrás */
+        z-index: 5;
     }
 
-    /* Área dos botões */
+    /* Botões visíveis */
     .btn-area {
         position: absolute;
-        bottom: 4vh;
+        bottom: 5vh;
         width: 100%;
         display: flex;
         justify-content: center;
-        gap: 6vw;
-        z-index: 10; /* na frente */
+        gap: 30px;
+        z-index: 10;
     }
 
     .btn {
-        padding: 2.8vh 3.5vh;
+        padding: 18px;
+        background: white;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.85);
         border: none;
-        backdrop-filter: blur(6px);
-        font-size: 0;
         cursor: pointer;
-        transition: 0.3s;
-    }
-
-    /* Ícones */
-    .icon {
-        width: 26px;
-        height: 26px;
-        opacity: 0.85;
-    }
-
-    /* Animação do botão de captura */
-    #capture-btn {
-        animation: pulse 1.6s infinite ease-in-out;
-    }
-
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.08); }
-        100% { transform: scale(1); }
-    }
-
-    /* Tela de preview */
-    #preview-screen {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%;
-        height: 100%;
-        background: #000;
-        display: none;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 20; /* acima de tudo */
-    }
-
-    #preview-img {
-        max-width: 100%;
-        max-height: 80%;
-    }
-
-    #preview-buttons {
-        margin-top: 3vh;
-        display: flex;
-        gap: 5vw;
-    }
-
-    .preview-btn {
-        padding: 1.5vh 3vh;
-        background: #ffffffee;
-        border-radius: 12px;
-        border: none;
-        font-size: 2.4vh;
-        cursor: pointer;
-        backdrop-filter: blur(4px);
     }
 </style>
 </head>
@@ -125,95 +65,21 @@
     <video id="video" autoplay playsinline></video>
     <img id="frame" src="moldura.png">
 
-    <!-- Botões da câmera -->
-    <div class="btn-area" id="camera-buttons">
-        <button class="btn" id="switch-btn">
-            <img src="https://cdn-icons-png.flaticon.com/512/545/545682.png" class="icon">
-        </button>
-
-        <button class="btn" id="capture-btn">
-            <img src="https://cdn-icons-png.flaticon.com/512/32/32355.png" class="icon">
-        </button>
-    </div>
-
-    <!-- Tela de Preview -->
-    <div id="preview-screen">
-        <img id="preview-img">
-
-        <div id="preview-buttons">
-            <button class="preview-btn" id="save-btn">Salvar</button>
-            <button class="preview-btn" id="retake-btn">Tirar outra</button>
-        </div>
+    <div class="btn-area">
+        <button class="btn" id="capture-btn">📸</button>
+        <button class="btn" id="switch-btn">🔄</button>
     </div>
 </div>
 
-<!-- Canvas oculto -->
-<canvas id="canvas" width="1080" height="1920" style="display:none"></canvas>
-
 <script>
-let video = document.getElementById("video");
-let canvas = document.getElementById("canvas");
-let frame = document.getElementById("frame");
-let facing = "environment"; // abre pela traseira
-
-async function startCamera() {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: facing,
-                width: { ideal: 1080 },
-                height: { ideal: 1920 }
-            }
-        });
-
-        video.srcObject = stream;
-    } catch (err) {
-        alert("Erro ao acessar câmera");
-    }
+async function startCamera(facing = "environment") {
+    const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facing }
+    });
+    document.getElementById("video").srcObject = stream;
 }
 
 startCamera();
-
-// Trocar câmera
-document.getElementById("switch-btn").addEventListener("click", () => {
-    facing = facing === "environment" ? "user" : "environment";
-    startCamera();
-});
-
-// Capturar
-document.getElementById("capture-btn").addEventListener("click", () => {
-    let ctx = canvas.getContext("2d");
-
-    // espelhamento
-    ctx.save();
-    ctx.scale(-1, 1);
-    ctx.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-    ctx.restore();
-
-    // moldura
-    ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
-
-    let imgData = canvas.toDataURL("image/png", 1.0);
-
-    document.getElementById("preview-img").src = imgData;
-
-    document.getElementById("camera-buttons").style.display = "none";
-    document.getElementById("preview-screen").style.display = "flex";
-});
-
-// Salvar
-document.getElementById("save-btn").addEventListener("click", () => {
-    let link = document.createElement("a");
-    link.download = "foto-moldura.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-});
-
-// Tirar outra
-document.getElementById("retake-btn").addEventListener("click", () => {
-    document.getElementById("preview-screen").style.display = "none";
-    document.getElementById("camera-buttons").style.display = "flex";
-});
 </script>
 
 </body>
