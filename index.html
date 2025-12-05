@@ -14,13 +14,16 @@
             align-items: center;
             height: 100vh;
         }
+
         #camera {
             position: absolute;
             width: 100vw;
             height: 100vh;
             object-fit: cover;
             z-index: 1;
+            transform: scaleX(-1); /* ESPELHO */
         }
+
         #frame {
             position: absolute;
             width: 100vw;
@@ -28,16 +31,25 @@
             z-index: 2;
             pointer-events: none;
         }
-        #captureBtn {
+
+        .btn {
             position: absolute;
-            bottom: 20px;
             z-index: 3;
-            font-size: 18px;
-            padding: 12px 20px;
+            font-size: 17px;
+            padding: 12px 18px;
             border: none;
             border-radius: 10px;
             background: #ff4081;
             color: white;
+            cursor: pointer;
+        }
+
+        #captureBtn {
+            bottom: 20px;
+        }
+
+        #switchBtn {
+            bottom: 80px;
         }
     </style>
 </head>
@@ -45,7 +57,9 @@
 
     <video id="camera" autoplay playsinline></video>
     <img id="frame" src="moldura.png">
-    <button id="captureBtn">📸 Capturar</button>
+
+    <button class="btn" id="captureBtn">📸 Capturar</button>
+    <button class="btn" id="switchBtn">🔄 Virar Câmera</button>
 
     <canvas id="canvas" style="display:none"></canvas>
 
@@ -54,29 +68,61 @@
         const frame = document.getElementById('frame');
         const canvas = document.getElementById('canvas');
         const captureBtn = document.getElementById('captureBtn');
+        const switchBtn = document.getElementById('switchBtn');
 
-        // Abrir câmera
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
-            .then(stream => {
-                camera.srcObject = stream;
+        let usingFrontCamera = false;
+        let currentStream;
+
+        async function startCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            currentStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: usingFrontCamera ? "user" : { exact: "environment" },
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
+                }
             });
 
-        // Capturar foto
-        captureBtn.onclick = () => {
-            const context = canvas.getContext('2d');
-            canvas.width = camera.videoWidth;
-            canvas.height = camera.videoHeight;
+            camera.srcObject = currentStream;
 
-            // Desenha câmera
+            // ESPELHO apenas quando frontal estiver ativa
+            camera.style.transform = usingFrontCamera ? "scaleX(-1)" : "scaleX(1)";
+        }
+
+        // Inicia na câmera traseira
+        startCamera();
+
+        // Trocar câmera
+        switchBtn.onclick = () => {
+            usingFrontCamera = !usingFrontCamera;
+            startCamera();
+        };
+
+        // Capturar foto em 1080x1920 com qualidade máxima
+        captureBtn.onclick = async () => {
+            const context = canvas.getContext('2d');
+
+            // Define resolução vertical 1080x1920
+            canvas.width = 1080;
+            canvas.height = 1920;
+
+            // Ajuste para crop correto
             context.drawImage(camera, 0, 0, canvas.width, canvas.height);
 
-            // Desenha moldura
-            context.drawImage(frame, 0, 0, canvas.width, canvas.height);
+            // Desenha moldura por cima
+            const frameImg = new Image();
+            frameImg.src = "moldura.png";
+            await frameImg.decode();
 
-            // Baixa a foto
+            context.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+
+            // Download em qualidade máxima
             const link = document.createElement('a');
-            link.download = 'foto-com-moldura.png';
-            link.href = canvas.toDataURL();
+            link.download = 'foto-moldura.png';
+            link.href = canvas.toDataURL("image/png", 1.0);
             link.click();
         };
     </script>
